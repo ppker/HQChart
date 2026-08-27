@@ -2093,6 +2093,159 @@ function LatestPointFlashPaint()
         this.Canvas.closePath();
     }
 }
+
+function KLineSelectedPaint()
+{
+    this.newMethod=IExtendChartPainting;   //派生
+    this.newMethod();
+    delete this.newMethod;
+
+    this.ClassName='KLineSelectedPaint';
+    this.IsDynamic=false;
+    this.IsCallbackDraw=true;   //在回调函数里绘制, 不在Draw()中绘制
+    this.FrameID=0;
+    this.MapSelectedData=new Map();  //选中数据 { Period:, DateTime:[{ Date:, Time:}, .....] }
+
+    this.BGColor=g_JSChartResource.KLineSelectedPaint.BGColor;
+    this.AryColor=g_JSChartResource.KLineSelectedPaint.AryColor.slice();
+
+    this.ReloadResource=function(resource)
+    {
+        this.BGColor=g_JSChartResource.KLineSelectedPaint.BGColor;
+        this.AryColor=g_JSChartResource.KLineSelectedPaint.AryColor.slice();
+    }
+
+    this.SetOption=function(option)
+    {
+        if (option)
+        {
+            if (option.BGColor) this.BGColor=option.BGColor;
+            if (IFrameSplitOperator.IsNonEmptyArray(option.ArySelected))
+            {
+                for(var i=0;i<option.ArySelected.length;++i)
+                {
+                    var item=option.ArySelected[i];
+                    this.AddSelected(item, item);
+                }
+            }
+        }
+    }
+
+    this.AddSelected=function(dateTime, option)
+    {
+        if (!dateTime) return false;
+        var key=this.BuildKey(dateTime);
+        if (!key) return false;
+
+        var item={ Date:dateTime.Date, Time:dateTime.Time};
+        if (option && option.BGColor) item.BGColor=option.BGColor;
+        if (option && IFrameSplitOperator.IsNumber(option.ColorID)) item.ColorID=option.ColorID;
+
+        this.MapSelectedData.set(key, item);
+
+        return true;
+    }
+
+    this.RemoveSelected=function(dateTime) 
+    {
+        if (!dateTime) return false;
+        var key=this.BuildKey(dateTime);
+        if (!key) return false;
+        return this.MapSelectedData.delete(key);
+    }
+
+    this.ClearAll=function()
+    {
+        this.MapSelectedData.clear();
+    }
+
+    this.BuildKey=function(item)
+    {
+        if (IFrameSplitOperator.IsNumber(item.Time)) return `${item.Date}-${item.Time}`;
+        else if (IFrameSplitOperator.IsNumber(item.Date)) return `${item.Date}`;
+        else return null;
+    }
+    
+    this.Draw=function()
+    {
+        if (this.MapSelectedData.size<=0) return;
+        if (!this.HQChart) return;
+        var hisData=this.HQChart.GetKData();
+        if (!hisData || !IFrameSplitOperator.IsNonEmptyArray(hisData.Data)) return;  //数据还没有到达
+
+        var mainFrame=this.HQChart.Frame.SubFrame[0].Frame;
+        var bHScreen=(this.ChartFrame.IsHScreen===true);
+        var dataWidth=mainFrame.DataWidth;
+        var distanceWidth=mainFrame.DistanceWidth;
+        var xPointCount=mainFrame.XPointCount;
+
+        if (bHScreen)
+        {
+            var border=this.ChartBorder.GetHScreenBorder();
+            var chartright=border.BottomEx;
+            var xOffset=border.TopEx+distanceWidth/2.0+g_JSChartResource.FrameLeftMargin;
+            var top=border.RightEx;
+            var bottom=border.LeftEx;
+        }
+        else
+        {
+            var border=this.ChartBorder.GetBorder();
+            var xOffset=border.LeftEx+distanceWidth/2.0+g_JSChartResource.FrameLeftMargin;
+            var chartright=border.RightEx;
+            var top=border.TopEx;
+            var bottom=border.BottomEx;
+        }
+
+        this.Canvas.fillStyle="rgb(40,30,100)";
+        for(var i=hisData.DataOffset,j=0;i<hisData.Data.length && j<xPointCount;++i,++j,xOffset+=(dataWidth+distanceWidth))
+        {
+            var item=hisData.Data[i];
+            if (!item) continue;
+
+            var key=this.BuildKey(item);
+            if (!key || !this.MapSelectedData.has(key)) continue;
+
+            var left=xOffset;
+            var right=xOffset+dataWidth;
+            if (right>chartright) break;
+            var xCenter=left+(right-left)/2;
+
+            var xStart=left-distanceWidth/2;
+            var xEnd=right+distanceWidth/2;
+
+            var selectedItem=this.MapSelectedData.get(key);
+            var drawItem={ Data:selectedItem, Left:xStart, Right:xEnd, XCenter:xCenter };
+
+            if (bHScreen)
+            {
+                var rtItem={ Left:top, Right:bottom, Top:drawItem.Left, Bottom:drawItem.Right };
+                rtItem.Width=rtItem.Right-rtItem.Left;
+                rtItem.Height=rtItem.Bottom-rtItem.Top;
+                if (rtItem.Heigh<1) rtItem.Height=1;
+            }
+            else
+            {
+                var rtItem={ Left:drawItem.Left, Right:drawItem.Right, Top:top, Bottom:bottom };
+                rtItem.Width=rtItem.Right-rtItem.Left;
+                rtItem.Height=rtItem.Bottom-rtItem.Top;
+                if (rtItem.Width<1) rtItem.Width=1;
+            }
+
+            var color=this.BGColor;
+            if (selectedItem.BGColor) color=selectedItem.BGColor;
+            else if (IFrameSplitOperator.IsNumber(selectedItem.ColorID))
+            {
+                if (selectedItem.ColorID>=0 && selectedItem.ColorID<this.AryColor.length)
+                    color=this.AryColor[selectedItem.ColorID];
+            }
+
+            this.Canvas.fillStyle=color;
+
+            this.Canvas.fillRect(ToFixedRect(rtItem.Left), ToFixedRect(rtItem.Top), ToFixedRect(rtItem.Width), ToFixedRect(rtItem.Height));
+        }
+    }
+}
+
 /*
     扩展图形
 */
@@ -2102,6 +2255,7 @@ function ExtendChartPaintFactory()
         [
             //["FrameSplitPaint", { Create:function() { return new FrameSplitPaint(); } }],
             ["LatestPointFlashPaint", {Create:function() { return new LatestPointFlashPaint(); }}],
+            ["KLineSelectedPaint", { Create:function(){ return new KLineSelectedPaint(); }}],
         ]
     );
 
@@ -2143,6 +2297,7 @@ export
     BarragePaint,
     MinuteTooltipPaint,
     BackgroundPaint,
+    KLineSelectedPaint,
     g_ExtendChartPaintFactory,
     StockChipPhone,
 }

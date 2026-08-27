@@ -752,6 +752,12 @@ function GetBlackStyle()
             Up:{ BGColor:"rgb(238,21,21)", PriceColor:"rgb(250,250,250)", TimeColor:"rgb(190,190,190)" },
             Down:{ BGColor:"rgb(25,158,0)", PriceColor:"rgb(250,250,250)", TimeColor:"rgb(190,190,190)" },
         },
+
+        KLineSelectedPaint:
+        {
+            BGColor:"rgb(100,149,237)",
+            AryColor:["rgb(205,92,92)", "rgb(188,143,143)", "rgb(255,127,80)", "rgb(255,99,71)", "rgb(255,69,0)"],
+        },
     
         //成交明细
         DealList:

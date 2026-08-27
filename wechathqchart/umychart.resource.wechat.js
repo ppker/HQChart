@@ -445,6 +445,12 @@ function JSChartResource()
         }
     }
 
+    this.KLineSelectedPaint=
+    {
+        BGColor:"rgb(255,222,173)",
+        AryColor:["rgb(255,182,193)", "rgb(255,222,173)", "rgb(255,255,224)", "rgb(173,216,230)", "rgb(221,160,221)"],
+    }
+
     this.StockChip=
     {
         InfoColor:'rgb(0,0,0)', //文字颜色
@@ -1019,8 +1025,16 @@ function JSChartResource()
         if (style.LatestPointFlash) this.SetLatestPointFlash(style.LatestPointFlash);
         if (style.ChartPointDot) this.SetChartPointDot(style.ChartPointDot);
         if (style.ChartHorizontalChannel) this.SetChartHorizontalChannel(style.ChartHorizontalChannel);
+        if (style.KLineSelectedPaint) this.SetKLineSelectedPaint(style.KLineSelectedPaint);
     }
 
+    this.SetKLineSelectedPaint=function(style)
+    {
+        var dest=this.KLineSelectedPaint;
+        if (style.BGColor) dest.BGColor=style.BGColor;
+        if (IFrameSplitOperator.IsNonEmptyArray(style.AryColor)) dest.AryColor=style.AryColor.slice();
+    }
+    
     this.SetChartHorizontalChannel=function(style)
     {
         var dest=this.ChartHorizontalChannel;

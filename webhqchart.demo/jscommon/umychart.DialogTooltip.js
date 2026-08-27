@@ -1960,12 +1960,12 @@ function JSFloatTooltip()
 
             if (outItem.IsMergeCell)    //合并单元格
             {
-                item.TitleTd.colspan=2;
+                item.TitleTd.colSpan="2";
                 item.TextTd.style.display="none";
             }
             else
             {
-                if (item.TitleTd.colspan!=1) item.TitleTd.colspan=1;
+                if (item.TitleTd.colSpan!=1) item.TitleTd.colSpan=1;
                 item.TextTd.style.display="";
             }
            
@@ -2172,7 +2172,7 @@ function JSFloatTooltip()
     //大宗交易
     this.FormatBlockTradingText=function(data, floatPrecision, aryOut)
     {
-        var item={ Title:"", Text:"大宗交易", Color:this.TextColor, ClassName:this.ValueAlign.Left };
+        var item={ Title:"大宗交易", TitleColor:this.TextColor, IsMergeCell:true, TitleClassName:this.TitleAlign.Center };
         aryOut.push(item);
 
         var item={ Title:"日期",Text:IFrameSplitOperator.FormatDateString(data.Date,"YYYY-MM-DD"), Color:this.ValueColor };
@@ -2212,7 +2212,7 @@ function JSFloatTooltip()
     //龙虎榜
     this.FormatDragonTigerText=function(data, floatPrecision, aryOut)
     {
-        var item={ Title:"", Text:"龙虎榜", Color:this.TextColor, ClassName:this.ValueAlign.Left };
+        var item={ Title:"龙虎榜", TitleColor:this.TextColor, IsMergeCell:true, TitleClassName:this.TitleAlign.Center };
         aryOut.push(item);
 
         var item={ Title:"日期",Text:IFrameSplitOperator.FormatDateString(data.Date,"YYYY-MM-DD"), Color:this.ValueColor};
@@ -2256,7 +2256,7 @@ function JSFloatTooltip()
             }
             else if (item.Type==2)  //单行
             {
-                var outItem={ Title:"", Text:item.Name, Color:this.TextColor, ClassName:this.ValueAlign.Left };
+                var outItem={ Title:item.Name, TitleColor:this.TextColor, IsMergeCell:true, TitleClassName:this.TitleAlign.Center };
             }
             else
             {
@@ -2270,7 +2270,7 @@ function JSFloatTooltip()
     //调研
     this.FormatResearchText=function(data,aryOut)
     {
-        var item={ Title:"", Text:"机构调研", Color:this.TextColor, ClassName:this.ValueAlign.Left };
+        var item={ Title:"机构调研", TitleColor:this.TextColor, IsMergeCell:true, TitleClassName:this.TitleAlign.Center };
         aryOut.push(item);
 
         var item={ Title:"公告日期",Text:IFrameSplitOperator.FormatDateString(data.Date,"YYYY-MM-DD"), Color:this.ValueColor };
@@ -2871,12 +2871,12 @@ function JSSmallFloatTooltipV2()
 
             if (outItem.IsMergeCell)    //合并单元格
             {
-                item.TitleTd.colspan=2;
+                item.TitleTd.colSpan='2';
                 item.TextTd.style.display="none";
             }
             else
             {
-                if (item.TitleTd.colspan!=1) item.TitleTd.colspan=1;
+                if (item.TitleTd.colSpan!='1') item.TitleTd.colSpan='1';
                 item.TextTd.style.display="";
             }
            

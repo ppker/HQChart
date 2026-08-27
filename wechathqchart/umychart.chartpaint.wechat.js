@@ -6250,26 +6250,36 @@ function ChartMultiText()
 
     this.GetMaxMin = function () 
     {
-        var range = { Min: null, Max: null };
-        if (!this.Texts) return range;
+        var range={ Min:null, Max:null };
+		if (!this.Texts) return range;
 
-        var xPointCount = this.ChartFrame.XPointCount;
-        var start = this.Data.DataOffset;
-        var end = start + xPointCount;
+		if(!this.Data || !IFrameSplitOperator.IsNonEmptyArray(this.Data.Data)) return range;
+		if (!this.MapCache || this.MapCache.size<=0) return range;
+		var xPointCount=this.ChartFrame.XPointCount;
 
-        for (var i in this.Texts) 
-        {
-            var item = this.Texts[i];
-            if (item.Index >= start && item.Index < end) 
-            {
-                if (range.Max == null) range.Max = item.Value;
-                else if (range.Max < item.Value) range.Max = item.Value;
-                if (range.Min == null) range.Min = item.Value;
-                else if (range.Min > item.Value) range.Min = item.Value;
-            }
-        }
+		for(var i=this.Data.DataOffset,j=0, k=0;i<this.Data.Data.length && j<xPointCount;++i,++j)
+		{
+			var kItem=this.Data.Data[i];
+			var key=this.BuildKey(kItem);
+			if (!this.MapCache.has(key)) continue;
+			var mapItem=this.MapCache.get(key);
+			if (!IFrameSplitOperator.IsNonEmptyArray(mapItem.Data)) continue;
 
-        return range;
+			for(k=0;k<mapItem.Data.length;++k)
+			{
+				var item=mapItem.Data[k];
+				var value=item.Value;
+				if (IFrameSplitOperator.IsString(item.Value)) value=this.GetKValue(kItem,item.Value);
+				if (!IFrameSplitOperator.IsNumber(value)) continue;
+
+				if (range.Max==null) range.Max=value;
+				else if (range.Max<value) range.Max=value;
+				if (range.Min==null) range.Min=value;
+				else if (range.Min>value) range.Min=value;
+			}
+		}
+
+		return range;
     }
 }
 

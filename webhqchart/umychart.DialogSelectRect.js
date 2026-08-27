@@ -45,12 +45,23 @@ function JSDialogSelectRect()
 
     this.RestoreFocusDelay=800;
 
+    //计算公式配置 
+    // Increase=涨幅 0=（收-昨收)/昨收 1=(收-今开)/今开 2=(区间末尾收盘价 − 区间起始收盘价) ÷ 区间起始收盘价
+    // Amplitude=振幅 0= (当日最高价 − 当日最低价) ÷ 昨日收盘价   1=(当日最高价 − 当日最低价) ÷ 今开价 2=(区间内最高价 − 区间内最低价) ÷ 区间起始 K 收盘价
+    this.FormualConfig={ Increase:0,  Amplitude:0 };
+    
+
     this.Inital=function(hqchart, option)
     {
         this.HQChart=hqchart;
         if (option)
         {
-            
+            if (option.Formual)
+            {
+                var item=option.Formual;
+                if (IFrameSplitOperator.IsNumber(item.Increase)) this.FormualConfig.Increase=item.Increase;
+                if (IFrameSplitOperator.IsNumber(item.Amplitude)) this.FormualConfig.Amplitude=item.Amplitude;
+            }
         }
     }
 
@@ -536,7 +547,9 @@ function JSDialogSelectRect()
     {
         var showData=
         {
-            Open:null,Close:null,High:null,Low:null, YClose:null,
+            Open:null, Close:null, High:null, Low:null, 
+            YClose:null,        //起始K昨价
+            StartClose:null,    //起始K收盘价
             Vol:0, Amount:0, 
             Date:
             { 
@@ -605,9 +618,53 @@ function JSDialogSelectRect()
                 showData.Date.End.Time=item.Time;
                 if (!IFrameSplitOperator.IsNumber(showData.Date.Start.Time)) showData.Date.Start.Time=item.Time;
             }
+
+            if (i==start)
+            {
+                if (IFrameSplitOperator.IsNumber(item.YClose)) showData.YClose=item.YClose;
+                if (IFrameSplitOperator.IsNumber(item.Close)) showData.StartClose=item.Close;
+            } 
         }
 
         return showData;
+    }
+
+    this.FormatKLineIncrease=function(showData)
+    {
+        var value=null;
+        switch(this.FormualConfig.Increase)
+        {
+            case 1:
+                value=showData.Open;
+                break;
+            case 2:
+                value=showData.StartClose;
+                break;
+            default:
+                value=showData.YClose;
+                break; 
+        }
+       
+        return this.FormatIncrease(showData.Close, value, 'DialogSelectRect-Increase')
+    }
+
+    this.FormatKLineAmplitude=function(showData)
+    {
+        var value=null;
+        switch(this.FormualConfig.Increase)
+        {
+            case 1:
+                value=showData.Open;
+                break;
+            case 2:
+                value=showData.StartClose;
+                break;
+            default:
+                value=showData.YClose;
+                break; 
+        }
+
+        return this.FormatAmplitude(showData.High, showData.Low, value, 'DialogSelectRect-Amplitude')
     }
 
     //格式化K线数据
@@ -635,11 +692,11 @@ function JSDialogSelectRect()
 
         showData.AryText.push(this.ForamtPrice(showData.Open, showData.Open,defaultfloatPrecision, 'DialogSelectRect-StartPrice'));
         showData.AryText.push(this.ForamtPrice(showData.Close, showData.Open,defaultfloatPrecision, 'DialogSelectRect-EndPrice'));
-        showData.AryText.push(this.FormatIncrease(showData.Close, showData.Open, 'DialogSelectRect-Increase'));
+        showData.AryText.push(this.FormatKLineIncrease(showData));
 
         showData.AryText.push(this.ForamtPrice(showData.High, showData.Open,defaultfloatPrecision, 'DialogSelectRect-High'));
         showData.AryText.push(this.ForamtPrice(showData.Low, showData.Open,defaultfloatPrecision, 'DialogSelectRect-Low'));
-        showData.AryText.push(this.FormatAmplitude(showData.High, showData.Low, showData.Open, 'DialogSelectRect-Amplitude'));
+        showData.AryText.push(this.FormatKLineAmplitude(showData));
 
         showData.AryText.push(this.FormatVol(showData.Vol, 'DialogSelectRect-Vol'));
         showData.AryText.push(this.FormatAmount(showData.Amount, 'DialogSelectRect-Amount'));

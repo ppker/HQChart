@@ -238,6 +238,12 @@ function GetBlackStyle()
             TitleFont:'13px 微软雅黑'               //字体
         },
 
+        KLineSelectedPaint:
+        {
+            BGColor:"rgb(100,149,237)",
+            AryColor:["rgb(205,92,92)", "rgb(188,143,143)", "rgb(255,127,80)", "rgb(255,99,71)", "rgb(255,69,0)"],
+        },
+
         //深度图
         DepthChart:
         {
